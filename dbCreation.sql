@@ -1,25 +1,25 @@
+
 create database store;
 use store;
 
 create table category(
-cat_ID int unique not null,
-cat_name VARCHAR(30),
-PRIMARY KEY (cat_ID)
+ id int unique not null auto_increment,
+ `name` VARCHAR(30) unique not null,
+PRIMARY KEY (id)
 
 );
 
 
-
 create table product(
-product_ID int unique,
+product_ID int unique auto_increment,
 title VARCHAR(20),
 product_desc VARCHAR(30),
 price int,
-img_url VARCHAR(30),
-cat_ID int not null,
+img_url text,
+id int not null,
 favorite boolean,
 
 PRIMARY KEY (product_ID),
-FOREIGN KEY (cat_id) REFERENCES category(cat_id)
+FOREIGN KEY (id) REFERENCES category(id)
 );
 
