@@ -48,13 +48,13 @@ def category():  # this is supposed to create the category it is being fed.
         code = code400
         status = err_status
         msg = err_msg2
-        return json.dumps({"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code})
+        return {"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code}
 
     else:
 
         try:
             with connection.cursor() as cursor:
-                sql = 'INSERT INTO category (cat_name) VALUES("{}")'.format(name)
+                sql = 'INSERT INTO category (name) VALUES("{}")'.format(name)
                 cursor.execute(sql)
                 connection.commit()
                 # result = cursor.fetchall()
@@ -64,18 +64,18 @@ def category():  # this is supposed to create the category it is being fed.
                 code = code201
                 status = err_status
                 msg = err_msg1
-                return json.dumps({"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code})
+                return {"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code}
             else:
                 code = code500
                 status = err_status
                 msg = err_msg3
-                return json.dumps({"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code})
+                return {"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code}
 
     code = code200
     status = succ_status
     cat_id = cursor.lastrowid
 
-    return json.dumps({"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code})
+    return {"STATUS": status, "MSG": msg, "CAT_ID": cat_id, "CODE": code}
 
 
 @get('/categories')
@@ -87,11 +87,11 @@ def categories():
 
     try:
         with connection.cursor() as cursor:
-            sql = 'SELECT cat_id,cat_name FROM category'
+            sql = 'SELECT id,name FROM category'
             cursor.execute(sql)
             result = cursor.fetchall()
             status = "SUCCESS"
-            categories = json.dumps(result)
+            categories = result
             code = "200 - success"
 
     except Exception as e:
@@ -100,17 +100,17 @@ def categories():
             msg = "Internal Error"
             code = "500 - internal error"
 
-    return json.dumps({"STATUS": status, "MSG": msg, "CATEGORIES": categories, "CODE": code})
+    return {"STATUS": status, "MSG": msg, "CATEGORIES": categories, "CODE": code}
 
-@get('/category/<id>',method = "delete")
-def del_category(id):
+@delete('/category/<cat_ID>')
+def del_category(cat_ID):
     status = None
     msg = None
     code = None
 
     try:
         with connection.cursor() as cursor:
-            sql = 'DELETE FROM category where cat_id={}'.format(id)
+            sql = 'DELETE FROM category where id={}'.format(cat_ID)
             category = cursor.execute(sql)
             connection.commit()
 
@@ -129,10 +129,10 @@ def del_category(id):
         code = '404 - category not found'
         msg = 'category not found'
 
-    return json.dumps({"STATUS":status, "MSG":msg,  "CODE":code})
+    return {"STATUS":status, "MSG":msg,  "CODE":code}
 
 
-@get('/product', method = "POST") #add or edit a product
+@post('/product') #add or edit a product
 def add_product():
     product = request.forms
 
@@ -152,7 +152,7 @@ def add_product():
         status = "ERROR"
         msg = "missing parameters"
         code = "400 - bad request"
-        return json.dumps({"STATUS":status, "MSG":msg, "PRODUCT_ID":product_id, "CODE":code})
+        return {"STATUS":status, "MSG":msg, "PRODUCT_ID":product_id, "CODE":code}
 
 
     if product["id"]:
@@ -171,7 +171,7 @@ def add_product():
 
         try:
             with connection.cursor() as cursor:
-                sql = 'UPDATE product SET title="{}", product_desc = "{}", price = {},img_url="{}",cat_ID={},favorite={} WHERE product_ID={}'.format(
+                sql = 'UPDATE product SET title="{}", product_desc = "{}", price = {},img_url="{}",id={},favorite={} WHERE product_ID={}'.format(
                 title,description,price,img,cat_id,favorite,pid)
                 category = cursor.execute(sql)
                 connection.commit()
@@ -195,7 +195,7 @@ def add_product():
     else:
         try:
             with connection.cursor() as cursor:
-                sql = 'INSERT INTO product (title,product_desc,price,img_url,cat_id,favorite) VALUES("{0}","{1}",{2},"{3}",{4},{5})'.format(
+                sql = 'INSERT INTO product (title,product_desc,price,img_url,id,favorite) VALUES("{0}","{1}",{2},"{3}",{4},{5})'.format(
                 title,description,price,img,cat_id,favorite)
                 cursor.execute(sql)
                 connection.commit()
@@ -207,10 +207,10 @@ def add_product():
                 code = "500 - internal error"
                 print e
 
-    return json.dumps({"STATUS":status, "MSG":msg, "PRODUCT_ID":product_id, "CODE":code})
+    return {"STATUS":status, "MSG":msg, "PRODUCT_ID":product_id, "CODE":code}
 
-@get('/product/<id>',method="GET")
-def get_product(id):
+@get('/product/<cat_ID>')
+def get_product(cat_ID):
     status = None
     msg = None
     product = None
@@ -219,12 +219,12 @@ def get_product(id):
 
     try:
         with connection.cursor() as cursor:
-            sql = 'SELECT * FROM product WHERE product_ID={}'.format(id)
+            sql = 'SELECT * FROM product WHERE product_ID={}'.format(cat_ID)
             category = cursor.execute(sql)
             result = cursor.fetchone()
 
         if result:
-            product = {"category": result['cat_ID'],
+            product = {"category": result['id'],
                         "description" : result["product_desc"],
                         "price": result["price"],
                         "title": result["title"],
@@ -246,10 +246,10 @@ def get_product(id):
             code = "500 - internal error"
 
 
-    return json.dumps({"STATUS":status,"MSG":msg,"PRODUCT":product,"CODE":code})
+    return {"STATUS":status,"MSG":msg,"PRODUCT":product,"CODE":code}
 
-@get('/product/<id>')
-def delete_product(id):
+@delete('/product/<cat_ID>')
+def delete_product(cat_ID):
     result = {
     "STATUS": None,
     "MSG": None,
@@ -258,7 +258,7 @@ def delete_product(id):
 
     try:
         with connection.cursor() as cursor:
-            sql = 'DELETE FROM product where product_ID={}'.format(id)
+            sql = 'DELETE FROM product where product_ID={}'.format(cat_ID)
             category = cursor.execute(sql)
             connection.commit()
 
@@ -277,7 +277,7 @@ def delete_product(id):
         result['CODE'] = '404 - product not found'
         result['MSG'] = 'product not found'
 
-    return json.dumps(result)
+    return result
 
 @get('/products')
 def list_all_products():
@@ -298,7 +298,7 @@ def list_all_products():
 
             for result in results:
 
-                product = {"category": result['cat_ID'],
+                product = {"category": result['id'],
                         "description" : result["product_desc"],
                         "price": result["price"],
                         "title": result["title"],
@@ -319,10 +319,10 @@ def list_all_products():
             return_value['code'] = "500 - internal error"
 
 
-    return json.dumps(return_value)
+    return return_value
 
-@get('/category/<id>/products')
-def list_products_by_category(id):
+@get('/category/<cat_ID>/products')
+def list_products_by_category(cat_ID):
 
     return_value = {
     "STATUS":None,
@@ -335,13 +335,13 @@ def list_products_by_category(id):
 
     try:
         with connection.cursor() as cursor:
-            sql = 'SELECT * FROM product WHERE cat_ID={}'.format(id)
+            sql = 'SELECT * FROM product WHERE id={}'.format(cat_ID)
             cursor.execute(sql)
             results = cursor.fetchall()
 
             for result in results:
 
-                product = {"category": result['cat_ID'],
+                product = {"category": result['id'],
                         "description" : result["product_desc"],
                         "price": result["price"],
                         "title": result["title"],
@@ -367,7 +367,7 @@ def list_products_by_category(id):
             return_value['code'] = "500 - internal error"
 
 
-    return json.dumps(return_value)
+    return return_value
 
 
 @get('/js/<filename:re:.*\.js>')
